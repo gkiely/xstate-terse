@@ -1,0 +1,7 @@
+- See if there's a way to infer the values without using as const
+  - Check matt pocock tutorials
+
+What is remaining before I can use this?
+- Actions
+- Assign
+- Invoke
