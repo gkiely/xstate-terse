@@ -3,15 +3,12 @@ import { machine } from './main';
 it('generates a sane default machine', () => {
   // First define your context, states and events
   const requestMachine = machine({
+    id: 'request',
     context: {
       hello: 'world',
     },
     states: ['idle', 'loading', 'error'],
-    events: [
-      {
-        type: 'route',
-      },
-    ],
+    events: [{ type: 'route' }],
   } as const);
 
   // Then define your transitions and side effects
@@ -20,6 +17,7 @@ it('generates a sane default machine', () => {
   requestMachine.matches('idle').target('loading', fn).target('error');
 
   expect(requestMachine.getSnapshot()).toEqual({
+    id: 'request',
     initial: 'idle',
     preserveActionOrder: true,
     predictableActionArguments: true,

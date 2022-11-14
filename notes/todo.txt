@@ -1,7 +1,11 @@
+- createMachine that uses Xstate
+- Schema as typing for context and events
+- Improve readme example
+
 - See if there's a way to infer the values without using as const
   - Check matt pocock tutorials
 
-What is remaining before I can use this?
+What is remaining before I can use this in my own projects?
 - Actions
 - Assign
 - Invoke

@@ -10,6 +10,7 @@ export const assertType = <T>(_: unknown): asserts _ is T => {};
 
 type Options = {
   context: JSObject;
+  id: string;
   states: readonly string[];
   events: readonly { type: string; payload?: JSObject | undefined }[];
 };
@@ -22,7 +23,7 @@ export const machine = <
 >(
   options: O
 ) => {
-  const { context, states: stateKeys } = options;
+  const { context, id, states: stateKeys } = options;
   type StateNodeEvent = Record<
     Events,
     {
@@ -50,6 +51,7 @@ export const machine = <
   }, {} as StateNode);
 
   const snapshot = {
+    id,
     initial: stateKeys.at(0),
     preserveActionOrder: true,
     predictableActionArguments: true,
