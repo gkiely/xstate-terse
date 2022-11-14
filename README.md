@@ -4,7 +4,7 @@
 
 The goal of this library is to reduce the amount of vertical space required to write state machines using Xstate.
 
-Using a chained syntax allows this library to achieve that goal as well as some additional benefits:
+Using a chained syntax allows this library to achieve that goal as well as some other additional benefits:
 
 - Great typescript support and type hinting
 - Sane defaults
