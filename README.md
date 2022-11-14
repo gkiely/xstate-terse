@@ -21,11 +21,7 @@ const requestMachine = machine({
     hello: 'world',
   },
   states: ['idle', 'loading', 'error'],
-  events: [
-    {
-      type: 'route',
-    },
-  ],
+  events: [{ type: 'route' }],
 } as const);
 
 requestMachine
