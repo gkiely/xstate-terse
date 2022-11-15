@@ -1,63 +1,26 @@
-import { machineOld } from './main';
+import { machine } from './main';
 
-type Target<State extends string> = {
-  target: (state: State, fn?: () => void) => Target<State>;
-};
-
-type Machine<Context extends object, State extends string, Event extends { type: string }> = {
-  context?: Context;
-  states: State[];
-  events: Event[];
-  matches: (state: State) => Target<State> & {
-    on: (event: Event['type']) => Target<State>;
-  };
-};
-
-const machine = <
-  Context extends object,
-  State extends string,
-  Event extends { type: EventType },
-  EventType extends string = string,
-  Result extends Machine<Context, State, Event> = Machine<Context, State, Event>
->(
-  o: Omit<Result, 'matches'>
-) => {
-  const result = {
-    context: o.context,
-  };
-
-  return result as Result as { matches: Result['matches'] };
-};
-
-const loadingMachine = machine({
-  context: {
-    hello: 'world',
-  },
-  states: ['idle', 'loading', 'error'],
-  events: [
-    {
-      type: 'route',
-    },
-  ],
-});
-
-const fn = () => Math.random() * 10 > 5;
-loadingMachine.matches('idle').on('route').target('loading');
-loadingMachine.matches('idle').on('route').target('loading', fn).target('error');
-
-it('generates a sane default machine', () => {
-  const requestMachine = machineOld({
+it('Generates a machine with defaults', () => {
+  const fn = () => Math.random() * 10 > 5;
+  const requestMachine = machine({
     id: 'request',
     context: {
       hello: 'world',
     },
     states: ['idle', 'loading', 'error'],
-    events: [{ type: 'route' }],
+    events: [
+      {
+        type: 'route',
+      },
+      {
+        type: 'reset',
+      },
+    ],
   });
 
-  const fn = () => Math.random() * 10 > 5;
   requestMachine.matches('idle').on('route').target('loading');
   requestMachine.matches('idle').target('loading', fn).target('error');
+  requestMachine.matches('error').on('reset').target('idle');
 
   expect(requestMachine.getSnapshot()).toEqual({
     id: 'request',
@@ -85,7 +48,16 @@ it('generates a sane default machine', () => {
         },
       },
       loading: {},
-      error: {},
+      error: {
+        on: {
+          reset: {
+            target: 'idle',
+          },
+        },
+      },
     },
   });
+
+  // const testMachine = createMachine(requestMachine);
+  // expect(testMachine.transition(testMachine.initialState, { type: 'route'}))
 });

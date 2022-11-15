@@ -22,7 +22,7 @@ const requestMachine = machine({
   },
   states: ['idle', 'loading', 'error'],
   events: [{ type: 'route' }],
-} as const);
+});
 
 requestMachine
   .matches('idle')

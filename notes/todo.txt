@@ -1,3 +1,10 @@
+- Get this to work
+  const testMachine = createMachine(requestMachine);
+  expect(testMachine.transition(testMachine.initialState, { type: 'route'}))
+  
+- Get typing working with existing methods
+- Write a number of tests and fix them
+
 - I don't even think we need actions?
   - You call cond
 
@@ -9,3 +16,7 @@ What is remaining before I can use this in my own projects?
 - Actions
 - Assign
 - Invoke
+
+
+Done
+- Get new machine working

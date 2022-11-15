@@ -1,42 +1,48 @@
 // type JSONValue = string | number | boolean | null | { [x: string]: JSONValue } | Array<JSONValue>;
 // type JSONObject = Record<string, JSONValue>;
-type JSValue = string | number | boolean | null | undefined | { [x: string]: JSValue } | Array<JSValue>;
-type JSObject = Record<string, JSValue>;
+// type JSValue = string | number | boolean | null | undefined | { [x: string]: JSValue } | Array<JSValue>;
+// type JSObject = Record<string, JSValue>;
+// export const assertType = <T>(_: unknown): asserts _ is T => {};
 
-// import { MachineConfig } from 'xstate';
-// type Result = MachineConfig<Options['context'], Record<string, unknown>, { type: '' }>;
-
-export const assertType = <T>(_: unknown): asserts _ is T => {};
-
-type Options = {
-  context: JSObject;
-  id: string;
-  states: readonly string[];
-  events: readonly { type: string; payload?: JSObject | undefined }[];
+type Target<State extends string> = {
+  target: (state: State, fn?: () => void) => Target<State>;
 };
 
-export const machineOld = <
-  O extends Options,
-  Context extends Options['context'],
-  States extends O['states'][number],
-  Events extends O['events'][number]['type']
->(
-  options: O
-) => {
-  const { context, id, states: stateKeys } = options;
-  type StateNodeEvent = Record<
-    Events,
+type Machine<Context extends object, State extends string, Event extends { type: string }> = {
+  id?: string;
+  context?: Context;
+  states: State[];
+  events: Event[];
+  initial?: State;
+  matches: (state: State) => Target<State> & {
+    on: (event: Event['type']) => Target<State>;
+  };
+};
+
+export const machine = <
+  Context extends object,
+  State extends string,
+  Event extends { type: EventType },
+  EventType extends string = string,
+  Result extends Machine<Context, State, Event> = Machine<Context, State, Event>,
+  OnEvent = Record<
+    EventType,
     {
-      target: States;
+      target: State;
       actions?: () => {};
     }
-  >;
-  type StateNode = Record<
-    States,
+  >
+>(
+  options: Omit<Result, 'matches'>
+) => {
+  const { context, id, initial, states: stateKeys } = options;
+
+  type StateNodes = Record<
+    State,
     {
-      on: StateNodeEvent;
+      on: OnEvent;
       always: {
-        target: States;
+        target: State;
         actions?: () => {};
         cond?: (c?: Context) => boolean;
       }[];
@@ -48,22 +54,22 @@ export const machineOld = <
       ...prev,
       [curr]: {},
     };
-  }, {} as StateNode);
+  }, {} as StateNodes);
 
   const snapshot = {
     id,
-    initial: stateKeys.at(0),
+    context,
     preserveActionOrder: true,
     predictableActionArguments: true,
-    context,
     states,
+    initial: initial ?? stateKeys.at(0),
   };
 
   const methods = {
     getSnapshot: () => snapshot,
-    matches: (state: States) => {
+    matches: (state: State) => {
       return {
-        target: (nextState: States, cond?: (c?: Context) => boolean) => {
+        target: (nextState: State, cond?: (c?: Context) => boolean) => {
           const stateNode = snapshot.states[state];
           if (!stateNode.always) {
             stateNode.always = [];
@@ -74,15 +80,15 @@ export const machineOld = <
           });
           return methods.matches(state);
         },
-        on: (event: Events) => {
+        on: (event: EventType) => {
           return {
-            target: (target: States) => {
+            target: (target: State) => {
               const stateNode = snapshot.states[state];
               stateNode.on = {
                 [event]: {
                   target,
                 },
-              } as StateNodeEvent;
+              } as OnEvent;
             },
           };
         },
@@ -90,6 +96,9 @@ export const machineOld = <
     },
   };
 
-  return methods;
-  /// TODO add satisfies type Result
+  return methods as unknown as {
+    getSnapshot: () => typeof snapshot;
+    matches: Result['matches'];
+  };
+  // return methods;
 };
