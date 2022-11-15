@@ -1,17 +1,60 @@
-import { machine } from './main';
+import { machineOld } from './main';
+
+type Target<State extends string> = {
+  target: (state: State, fn?: () => void) => Target<State>;
+};
+
+type Machine<Context extends object, State extends string, Event extends { type: string }> = {
+  context?: Context;
+  states: State[];
+  events: Event[];
+  matches: (state: State) => Target<State> & {
+    on: (event: Event['type']) => Target<State>;
+  };
+};
+
+const machine = <
+  Context extends object,
+  State extends string,
+  Event extends { type: EventType },
+  EventType extends string = string,
+  Result extends Machine<Context, State, Event> = Machine<Context, State, Event>
+>(
+  o: Omit<Result, 'matches'>
+) => {
+  const result = {
+    context: o.context,
+  };
+
+  return result as Result as { matches: Result['matches'] };
+};
+
+const loadingMachine = machine({
+  context: {
+    hello: 'world',
+  },
+  states: ['idle', 'loading', 'error'],
+  events: [
+    {
+      type: 'route',
+    },
+  ],
+});
+
+const fn = () => Math.random() * 10 > 5;
+loadingMachine.matches('idle').on('route').target('loading');
+loadingMachine.matches('idle').on('route').target('loading', fn).target('error');
 
 it('generates a sane default machine', () => {
-  // First define your context, states and events
-  const requestMachine = machine({
+  const requestMachine = machineOld({
     id: 'request',
     context: {
       hello: 'world',
     },
     states: ['idle', 'loading', 'error'],
     events: [{ type: 'route' }],
-  } as const);
+  });
 
-  // Then define your transitions and side effects
   const fn = () => Math.random() * 10 > 5;
   requestMachine.matches('idle').on('route').target('loading');
   requestMachine.matches('idle').target('loading', fn).target('error');

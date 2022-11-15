@@ -15,7 +15,7 @@ type Options = {
   events: readonly { type: string; payload?: JSObject | undefined }[];
 };
 
-export const machine = <
+export const machineOld = <
   O extends Options,
   Context extends Options['context'],
   States extends O['states'][number],
