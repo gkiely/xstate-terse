@@ -1,5 +1,33 @@
 import { machine } from './main';
 
+it('supports actions', () => {
+  const testMachine = machine({
+    id: 'test',
+    states: ['idle', 'loading', 'error'],
+    events: [
+      {
+        type: 'route',
+      },
+    ],
+  });
+
+  testMachine.matches('idle');
+
+  expect(testMachine.getSnapshot()).toEqual({
+    id: 'test',
+    initial: 'idle',
+    preserveActionOrder: true,
+    predictableActionArguments: true,
+    states: {
+      error: {},
+      idle: {},
+      loading: {},
+    },
+  });
+});
+
+it.todo('allows passing a second value as on', () => {});
+
 it('Generates a machine with defaults', () => {
   const fn = () => Math.random() * 10 > 5;
   const requestMachine = machine({
@@ -15,11 +43,14 @@ it('Generates a machine with defaults', () => {
       {
         type: 'reset',
       },
+      {
+        type: 'error',
+      },
     ],
   });
 
   requestMachine.matches('idle').on('route').target('loading');
-  requestMachine.matches('idle').target('loading', fn).target('error');
+  requestMachine.matches('idle').target('loading', fn).target('error', fn);
   requestMachine.matches('error').on('reset').target('idle');
 
   expect(requestMachine.getSnapshot()).toEqual({
@@ -39,6 +70,7 @@ it('Generates a machine with defaults', () => {
           },
           {
             target: 'error',
+            cond: fn,
           },
         ],
         on: {
@@ -57,7 +89,4 @@ it('Generates a machine with defaults', () => {
       },
     },
   });
-
-  // const testMachine = createMachine(requestMachine);
-  // expect(testMachine.transition(testMachine.initialState, { type: 'route'}))
 });

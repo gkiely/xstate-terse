@@ -1,9 +1,18 @@
+- Actions
+- Write a number of tests and fix them
+
+
 - Get this to work
   const testMachine = createMachine(requestMachine);
   expect(testMachine.transition(testMachine.initialState, { type: 'route'}))
   
-- Get typing working with existing methods
-- Write a number of tests and fix them
+
+- Add guard before .target
+- second param of target should be an action
+- second param of on should be an action
+- second param of matches should be an action
+
+
 
 - I don't even think we need actions?
   - You call cond
@@ -18,5 +27,10 @@ What is remaining before I can use this in my own projects?
 - Invoke
 
 
+Recreate the settings requestMachine and see if it's easier to:
+1) Build
+2) Recreate
+
+----
 Done
 - Get new machine working
