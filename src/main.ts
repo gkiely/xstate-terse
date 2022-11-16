@@ -4,19 +4,12 @@
 // type JSObject = Record<string, JSValue>;
 // export const assertType = <T>(_: unknown): asserts _ is T => {};
 
-type Target<State extends string> = {
-  target: (state: State, fn?: () => void) => Target<State>;
-};
-
 type Machine<Context extends object, State extends string, Event extends { type: string }> = {
   id?: string;
   context?: Context;
   states: State[];
   events: Event[];
   initial?: State;
-  matches: (state: State) => Target<State> & {
-    on: (event: Event['type']) => Target<State>;
-  };
 };
 
 export const machine = <
@@ -24,7 +17,6 @@ export const machine = <
   State extends string,
   Event extends { type: EventType },
   EventType extends string = string,
-  Result extends Machine<Context, State, Event> = Machine<Context, State, Event>,
   OnEvent = Record<
     EventType,
     {
@@ -33,7 +25,7 @@ export const machine = <
     }
   >
 >(
-  options: Omit<Result, 'matches'>
+  options: Machine<Context, State, Event>
 ) => {
   const { context, id, initial, states: stateKeys } = options;
 
@@ -80,7 +72,7 @@ export const machine = <
           });
           return methods.matches(state);
         },
-        on: (event: EventType) => {
+        on: (event: Event['type']) => {
           return {
             target: (target: State) => {
               const stateNode = snapshot.states[state];
@@ -89,6 +81,7 @@ export const machine = <
                   target,
                 },
               } as OnEvent;
+              return methods.matches(state);
             },
           };
         },
@@ -96,9 +89,5 @@ export const machine = <
     },
   };
 
-  return methods as unknown as {
-    getSnapshot: () => typeof snapshot;
-    matches: Result['matches'];
-  };
-  // return methods;
+  return methods;
 };

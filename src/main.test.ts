@@ -8,10 +8,12 @@ it('supports actions', () => {
       {
         type: 'route',
       },
+      {
+        type: 'reset',
+      },
     ],
   });
-
-  testMachine.matches('idle');
+  testMachine.matches('idle').on('route');
 
   expect(testMachine.getSnapshot()).toEqual({
     id: 'test',
